@@ -18,6 +18,8 @@
 
     using Unity;
     using Unity.AspNet.WebApi;
+    using NewPlatform.Flexberry.ORM.ODataService.WebApi.Extensions;
+    using NewPlatform.Flexberry.ORM.ODataService.Files;
 
     /// <summary>
     /// Configure OData Service.
@@ -48,6 +50,12 @@
             // Use Unity as WebAPI dependency resolver
             config.DependencyResolver = new UnityDependencyResolver(container);
 
+            // Config file upload.
+            const string fileControllerPath = "api/File";
+            config.MapODataServiceFileRoute("File", fileControllerPath);
+            var fileAccessor = new DefaultDataObjectFileAccessor(new Uri("http://localhost"), fileControllerPath, "Uploads");
+            container.RegisterInstance<IDataObjectFileAccessor>(fileAccessor);
+
             // Create EDM model builder
             var assemblies = new[]
             { 
@@ -60,7 +68,7 @@
             var builder = new DefaultDataObjectEdmModelBuilder(assemblies);
 
             // Map OData Service
-            var token = config.MapODataServiceDataObjectRoute(builder, httpServer);
+            var token = config.MapDataObjectRoute(builder, httpServer);
 
             // User functions
             token.Functions.Register(new Func<QueryParameters, string>(Test));
